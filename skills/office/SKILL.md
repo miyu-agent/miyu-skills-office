@@ -21,18 +21,19 @@ Paths below are relative to this folder (the folder holding this `SKILL.md`).
 | Python 3.12 with python-docx, python-pptx, openpyxl, XlsxWriter, pandas, numpy, Pillow, lxml | `runtime/python/bin/python3` | `runtime\python\python.exe` |
 | LibreOffice engine (render, PDF, recalculate) | `<python> tools/dsoffice.py <command> …` | same |
 | Default look for new files | `tools/officestyle.py` (import after `sys.path.insert(0, "<this folder>/tools")`) | same |
+| Installed fonts | `<python> tools/fonts.py --cjk` | same |
 
 Run scripts with the bundled Python by its absolute path. The folder is read-only: scripts, intermediate files and outputs go in the workspace. Script names such as `docx.py`, `pptx.py`, `openpyxl.py` or `inspect.py` shadow the libraries.
 
 ## New files
 
-A document made with the libraries' bare defaults uses serif fonts (Times-like Latin, Song-style CJK), blue template headings and cramped tables, and reads poorly on screen. `officestyle` gives new files a plain sans look: Arial with Microsoft YaHei (微软雅黑), readable sizes and spacing, light tables. Both fonts are standard on Windows; elsewhere the engine and Office substitute equivalents (Liberation Sans, PingFang SC, Noto Sans CJK).
+A document made with the libraries' bare defaults names no fonts, so it is drawn in serif faces (Times-like Latin, Song-style CJK), with blue template headings and cramped tables, and reads poorly on screen. `officestyle` sets fonts, sizes, spacing and table style for new files. Without arguments it uses Arial with Microsoft YaHei (微软雅黑) at 10.5 pt, a plain sans look suited to documents read on screen; fonts and sizes are arguments.
 
-- Word: `officestyle.new_document()`, `officestyle.style_table(table)`, `officestyle.set_fonts(run)`
-- PowerPoint: `officestyle.new_presentation()` (16:9, theme fonts set), `officestyle.set_run_fonts(run)`
-- Excel: `officestyle.new_workbook()`, `officestyle.style_header(sheet, widths={"A": 18})`
+- Word: `officestyle.new_document(latin, east_asian, size, heading_latin, heading_east_asian)`, `officestyle.style_table(table)`, `officestyle.set_fonts(run, latin, east_asian)`
+- PowerPoint: `officestyle.new_presentation(latin, east_asian, …)` (16:9, theme fonts set), `officestyle.set_run_fonts(run, latin, east_asian)`
+- Excel: `officestyle.new_workbook(font, size)`, `officestyle.style_header(sheet, widths={"A": 18})`
 
-A user's own template or an existing file keeps its own design.
+Fonts suit the kind of document: a formal report, a Chinese official document (公文) and a slide deck use different ones. `references/fonts.md` lists common choices, Chinese size names, what this machine has (`tools/fonts.py`) and what the engine draws in place of missing fonts. A user's own template or an existing file keeps its own design.
 
 ## References
 
@@ -42,6 +43,7 @@ Each format has its own notes; read the one the task needs.
 - `references/powerpoint.md`: .pptx with python-pptx
 - `references/excel.md`: .xlsx with openpyxl and pandas
 - `references/engine.md`: rendering pages to images, PDF export, formula recalculation
+- `references/fonts.md`: choosing fonts and sizes, checking what is installed
 
 ## What needs the engine
 

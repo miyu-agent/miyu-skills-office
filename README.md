@@ -15,7 +15,7 @@ LibreOffice 引擎在 Linux 上是 WASM 版，在 macOS、Windows 上是原生�
 
 装上以后直接跟 AI 说：「写一份周报 Word」「把这个 Excel 的合计算出来」「这份 PPT 转成 PDF」。AI 平时只看到技能的名字和一句说明，用到时才读 `SKILL.md` 和对应格式的那份参考。
 
-新建的文件用 `officestyle` 的默认样式：无衬线字体（Arial 配微软雅黑，别的系统换成 Liberation Sans、苹方、Noto Sans CJK）、正常的字号和行距、浅色细线表格。不用它的话，python-docx 这些库默认是衬线字体（Times、宋体一类）加蓝色标题，屏幕上看着又丑又虚。用户给了模板、改现成文件的，照原来的样子。
+新建的文件用 `officestyle` 定好字体、字号、行距和表格样式。不传参数是 Arial 配微软雅黑、五号字，适合屏幕上看的文档；字体、字号可以传，AI 照文档类型挑（正式报告宋体配 Times、公文仿宋三号、PPT 无衬线），常用搭配、中文字号对照、本机装了哪些字体（`tools/fonts.py`）、缺了的字体引擎拿什么顶上，写在 `references/fonts.md`。不用它的话，python-docx 这些库默认是衬线字体（Times、宋体一类）加蓝色标题，屏幕上看着又丑又虚。用户给了模板、改现成文件的，照原来的样子。
 
 技能文件夹在沙盒里是只读的：脚本、中间文件、结果都写在会话的工作区。给人看的时候先用引擎转一份同名的 PDF，PDF 和原文件各 `show` 一次：网页右栏能直接看 PDF，Word、PPT、Excel 只显示成能下载的卡片。人要的本来就是 PDF 的，只给 PDF。
 
@@ -24,9 +24,10 @@ LibreOffice 引擎在 Linux 上是 WASM 版，在 macOS、Windows 上是原生�
 ```text
 skills/office/
 ├── SKILL.md              # 入口：运行环境在哪、什么时候要用引擎、怎么交付
-├── references/           # word.md、powerpoint.md、excel.md、engine.md
+├── references/           # word.md、powerpoint.md、excel.md、engine.md、fonts.md
 ├── tools/dsoffice.py     # 用自带的 Node 跑 LibreOffice Kit 的命令行
-├── tools/officestyle.py  # 新建文件的默认样式：Arial + 微软雅黑、正常的字号行距、浅色表格
+├── tools/officestyle.py  # 新建文件的样式：字体、字号可传，默认 Arial + 微软雅黑
+├── tools/fonts.py        # 列出本机装的字体（引擎画得出来的那些）
 └── runtime/              # 打包时拼进来（build/runtime.sh），仓库里没有
 ```
 

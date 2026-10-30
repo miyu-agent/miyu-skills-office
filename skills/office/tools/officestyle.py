@@ -5,9 +5,9 @@ Import with the bundled Python:
     import sys; sys.path.insert(0, "<this skill>/tools")
     import officestyle
 
-Fonts: Arial for Latin text and Microsoft YaHei (微软雅黑) for Chinese, Japanese and Korean text. Both exist on
-Windows; on macOS and Linux the engine and Office substitute the metric-compatible or equivalent sans fonts
-(Liberation Sans, PingFang SC, Noto Sans CJK), so the files read the same everywhere.
+Default fonts: Arial for Latin text and Microsoft YaHei (微软雅黑) for Chinese, Japanese and Korean text. Both exist
+on Windows; on macOS and Linux the engine and Office substitute equivalent sans fonts (Liberation Sans, PingFang SC,
+Noto Sans CJK). Every constructor takes other fonts and sizes as arguments (see references/fonts.md).
 """
 from docx import Document
 from docx.enum.table import WD_CELL_VERTICAL_ALIGNMENT, WD_TABLE_ALIGNMENT
@@ -52,8 +52,10 @@ def _no_border(style):
             ppr.remove(border)
 
 
-def new_document(margins_cm=(2.2, 2.4)):
-    """An A4 document with sans fonts, readable spacing and plain dark headings."""
+def new_document(latin=LATIN, east_asian=EAST_ASIAN, size=10.5, heading_latin=None, heading_east_asian=None,
+                 heading_sizes=(22, 16, 13, 11.5), margins_cm=(2.2, 2.4)):
+    """An A4 document: body fonts and size as given, headings in the heading fonts (default: the body fonts) at
+    heading_sizes for Title, Heading 1, 2 and 3, readable spacing, plain dark headings."""
     document = Document()
     section = document.sections[0]
     section.page_width, section.page_height = Cm(21), Cm(29.7)
@@ -62,33 +64,34 @@ def new_document(margins_cm=(2.2, 2.4)):
 
     styles = document.styles
     normal = styles["Normal"]
-    set_fonts(normal)
-    normal.font.size = Pt(10.5)
+    set_fonts(normal, latin, east_asian)
+    normal.font.size = Pt(size)
     normal.font.color.rgb = TEXT
     fmt = normal.paragraph_format
     fmt.space_before, fmt.space_after = Pt(0), Pt(6)
     # 「至少」而不是倍数：中文字体自带的行高比 Arial 大，按倍数算两种字体的行就高低不齐
     fmt.line_spacing_rule = WD_LINE_SPACING.AT_LEAST
-    fmt.line_spacing = Pt(17)
+    fmt.line_spacing = Pt(round(size * 1.6, 1))
 
-    for name, size, before, after in (("Title", 22, 0, 10), ("Heading 1", 16, 18, 8),
-                                      ("Heading 2", 13, 14, 6), ("Heading 3", 11.5, 12, 4)):
+    heads = (heading_latin or latin, heading_east_asian or east_asian)
+    for name, head_size, before, after in zip(("Title", "Heading 1", "Heading 2", "Heading 3"), heading_sizes,
+                                              (0, 18, 14, 12), (10, 8, 6, 4)):
         style = styles[name]
-        set_fonts(style)
-        style.font.size = Pt(size)
+        set_fonts(style, *heads)
+        style.font.size = Pt(head_size)
         style.font.bold = True
         style.font.italic = False
         style.font.color.rgb = HEADING
         style.paragraph_format.space_before = Pt(before)
         style.paragraph_format.space_after = Pt(after)
         style.paragraph_format.line_spacing_rule = WD_LINE_SPACING.AT_LEAST
-        style.paragraph_format.line_spacing = Pt(round(size * 1.35))
+        style.paragraph_format.line_spacing = Pt(round(head_size * 1.35))
         _no_border(style)
     subtitle = styles["Subtitle"]
-    set_fonts(subtitle)
-    subtitle.font.size, subtitle.font.italic, subtitle.font.color.rgb = Pt(12), False, MUTED
+    set_fonts(subtitle, *heads)
+    subtitle.font.size, subtitle.font.italic, subtitle.font.color.rgb = Pt(round(size * 1.15, 1)), False, MUTED
     for name in ("List Bullet", "List Number", "Caption"):
-        set_fonts(styles[name])
+        set_fonts(styles[name], latin, east_asian)
     return document
 
 
@@ -157,8 +160,9 @@ def set_run_fonts(run, latin=LATIN, east_asian=EAST_ASIAN):
     ea.set("typeface", east_asian)
 
 
-def new_presentation():
-    """A 16:9 presentation whose theme fonts are Arial and Microsoft YaHei, so every placeholder and text box inherits them."""
+def new_presentation(latin=LATIN, east_asian=EAST_ASIAN, heading_latin=None, heading_east_asian=None):
+    """A 16:9 presentation whose theme fonts are the given ones (titles: the heading fonts, default the same), so every
+    placeholder and text box inherits them."""
     from pptx import Presentation
     from pptx.oxml.ns import qn as pqn
     from pptx.util import Inches
@@ -174,35 +178,37 @@ def new_presentation():
     theme_part = next(rel.target_part for rel in master.part.rels.values() if rel.reltype.endswith("/theme"))
     from lxml import etree
     theme = etree.fromstring(theme_part.blob)
-    for group in ("a:majorFont", "a:minorFont"):
+    fonts = {"a:majorFont": (heading_latin or latin, heading_east_asian or east_asian),
+             "a:minorFont": (latin, east_asian)}
+    for group, (group_latin, group_ea) in fonts.items():
         node = theme.find(f".//{pqn(group)}")
-        node.find(pqn("a:latin")).set("typeface", LATIN)
-        node.find(pqn("a:ea")).set("typeface", EAST_ASIAN)
+        node.find(pqn("a:latin")).set("typeface", group_latin)
+        node.find(pqn("a:ea")).set("typeface", group_ea)
         for script in node.findall(pqn("a:font")):
             if script.get("script") in ("Hans", "Hant", "Jpan", "Hang"):
-                script.set("typeface", EAST_ASIAN)
+                script.set("typeface", group_ea)
     theme_part._blob = etree.tostring(theme, xml_declaration=True, encoding="UTF-8", standalone=True)
     return presentation
 
 
 # ---------------------------------------------------------------- Excel
 
-def new_workbook():
-    """A workbook whose default cell font is Arial 10.5 (Excel's default Calibri is missing on many machines)."""
+def new_workbook(font=LATIN, size=10.5):
+    """A workbook whose default cell font is the given one (Excel's default Calibri is missing on many machines)."""
     from openpyxl import Workbook
     from openpyxl.styles import Font
     workbook = Workbook()
-    workbook._fonts[0] = Font(name=LATIN, size=10.5)
+    workbook._fonts[0] = Font(name=font, size=size)
     return workbook
 
 
-def style_header(sheet, row=1, widths=None):
+def style_header(sheet, row=1, widths=None, font=LATIN, size=10.5):
     """Bold shaded header row with a bottom rule; optional column widths {"A": 18}."""
     from openpyxl.styles import Alignment, Border, Font, PatternFill, Side
     for cell in sheet[row]:
         if cell.value is None:
             continue
-        cell.font = Font(name=LATIN, size=10.5, bold=True, color="111827")
+        cell.font = Font(name=font, size=size, bold=True, color="111827")
         cell.fill = PatternFill("solid", fgColor=HEADER_FILL)
         cell.border = Border(bottom=Side(style="thin", color=RULE))
         cell.alignment = Alignment(vertical="center")
