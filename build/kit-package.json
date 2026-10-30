@@ -1,0 +1,7 @@
+{
+  "private": true,
+  "name": "miyu-office-kit",
+  "dependencies": {
+    "@deepseek-ai/libreoffice-kit": "0.2.3"
+  }
+}
