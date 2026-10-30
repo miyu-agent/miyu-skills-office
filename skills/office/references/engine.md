@@ -10,14 +10,14 @@ The engine is LibreOffice Kit, run through `tools/dsoffice.py` with the bundled 
 <python> <this skill>/tools/dsoffice.py capabilities
 ```
 
-- Paths are absolute or relative to the working directory; each is quoted. Outputs are new paths: an existing output file is never overwritten, and `--output-dir` must not exist yet (the engine creates it).
+- Paths are absolute or relative to the working directory; each is quoted. Outputs are new paths: an existing output file is never overwritten, and `--output-dir` must not exist yet (the engine creates it; `dsoffice.py` creates missing parent directories).
 - Each command prints one JSON object. `render` lists every image (`path`, `width`, `height`, page) and `missingFonts`; `convert` gives `pageCount` and `missingFonts`.
 - `capabilities` lists formats, limits and options.
-- LibreOffice output can differ from Word, PowerPoint or Excel, mainly in fonts and pagination. `missingFonts` names fonts the document asks for that this machine lacks; the engine draws them with an equivalent (Arial → Liberation Sans, Microsoft YaHei → Noto Sans CJK or PingFang SC, Calibri → Carlito when installed). A missing font with no equivalent shows as a fallback face.
+- LibreOffice output can differ from Word, PowerPoint or Excel, mainly in fonts and pagination. `missingFonts` names fonts the document asks for that this machine lacks; the engine draws them with an equivalent (Arial → Liberation Sans, Microsoft YaHei → Noto Sans CJK or PingFang SC, Calibri → Carlito when installed). A missing font with no equivalent shows as a fallback face. Arial and Microsoft YaHei, `officestyle`'s defaults, are absent on Linux and appear in `missingFonts` on every render there; their equivalents are close matches, Liberation Sans having the same metrics as Arial. Fonts used only by bullets and numbering (Symbol, Wingdings) are not checked and not listed.
 
 ## Render
 
-Accepts .docx, .doc, .odt, .pptx, .ppt, .odp, .xlsx, .xls, .ods and .pdf; writes PNG pages plus `manifest.json`. Pages and slides are numbered from 1, at most 100 per call; several go in one `--pages` value (`"1,3,4"`). For workbooks, `--sheet` takes the exact sheet name and `--range` an A1 range; sheet numbers are not page numbers.
+Accepts .docx, .doc, .odt, .pptx, .ppt, .odp, .xlsx, .xls, .ods and .pdf; writes PNG pages plus `manifest.json`. Pages and slides are numbered from 1, at most 100 per call; several go in one `--pages` value (`"1,3,4"`). For workbooks, `--sheet` takes the exact sheet name and `--range` an A1 range; sheet numbers are not page numbers. A worksheet image is cropped tight to the range, so right-aligned numbers touch the right edge; one extra empty column and row in `--range` leaves a margin.
 
 `read` on a PNG shows it. Images for the user are kept and delivered. Images only for checking go in a fresh directory in the workspace, for example `.office-preview-<random>/render`, and that directory is removed after looking.
 

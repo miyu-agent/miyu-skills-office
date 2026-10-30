@@ -44,6 +44,8 @@ document.save("report.docx")
 
 A paragraph right after a table has no gap above it unless `space_before` is set.
 
+Bullets: python-docx's template draws `List Bullet` with U+F0B7 in the Symbol font. Where Symbol is missing, including the engine here, that bullet draws as nothing and `missingFonts` does not mention it; the preview shows only the indent. `officestyle.new_document()` switches the template's bullets to plain • ◦ ▪ in the body font. Existing documents with Symbol bullets look right in Word on Windows; only the preview here lacks the bullets.
+
 ## Checking
 
 Reopening the saved file with python-docx confirms the requested content and formatting, and that content meant to stay unchanged did. Styling, spacing, sizing or alignment edits are confirmed visually with a render.

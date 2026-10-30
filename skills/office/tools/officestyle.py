@@ -92,7 +92,35 @@ def new_document(latin=LATIN, east_asian=EAST_ASIAN, size=10.5, heading_latin=No
     subtitle.font.size, subtitle.font.italic, subtitle.font.color.rgb = Pt(round(size * 1.15, 1)), False, MUTED
     for name in ("List Bullet", "List Number", "Caption"):
         set_fonts(styles[name], latin, east_asian)
+    _plain_bullets(document, latin)
     return document
+
+
+BULLETS = ("•", "◦", "▪")
+
+
+def _plain_bullets(document, font):
+    """The template's bullets are U+F0B7 in the Symbol font, which machines without Symbol (and the engine's
+    replacement) draw as nothing. Use ordinary bullet characters in the body font instead."""
+    numbering = document.part.numbering_part.element
+    for lvl in numbering.iter(qn("w:lvl")):
+        fmt = lvl.find(qn("w:numFmt"))
+        if fmt is None or fmt.get(qn("w:val")) != "bullet":
+            continue
+        level = int(lvl.get(qn("w:ilvl"), "0"))
+        text = lvl.find(qn("w:lvlText"))
+        if text is not None:
+            text.set(qn("w:val"), BULLETS[level % len(BULLETS)])
+        rpr = lvl.find(qn("w:rPr"))
+        if rpr is None:
+            continue
+        fonts = rpr.find(qn("w:rFonts"))
+        if fonts is not None:
+            rpr.remove(fonts)
+        fonts = OxmlElement("w:rFonts")
+        for attr in ("w:ascii", "w:hAnsi", "w:cs", "w:eastAsia"):
+            fonts.set(qn(attr), font)
+        rpr.insert(0, fonts)
 
 
 def _cell_fill(cell, hex_color):
@@ -170,10 +198,13 @@ def new_presentation(latin=LATIN, east_asian=EAST_ASIAN, heading_latin=None, hea
     ratio = Inches(13.333) / presentation.slide_width
     presentation.slide_width, presentation.slide_height = Inches(13.333), Inches(7.5)
     master = presentation.slide_masters[0]
-    # 默认模板是 4:3 排的：母版、版式里的框照比例横向拉开，不然 16:9 的页上都挤在左边
+    # 默认模板是 4:3 排的：母版、版式里的框照比例横向拉开，不然 16:9 的页上都挤在左边。
+    # 只动自己写了位置（a:xfrm）的框：没写的照母版继承，母版拉过了它就跟着对了；读它的 left 拿到的是母版的值，
+    # 再乘一遍会拉两次，只写 left/width 还会给它造一个上边、高度都是 0 的 xfrm（10-31 使用报告）。
     for owner in [master, *master.slide_layouts]:
         for shape in owner.shapes:
-            if shape.left is not None and shape.width is not None:
+            xfrm = shape._element.xpath("./p:spPr/a:xfrm")
+            if xfrm and xfrm[0].off is not None and xfrm[0].ext is not None:
                 shape.left, shape.width = int(shape.left * ratio), int(shape.width * ratio)
     theme_part = next(rel.target_part for rel in master.part.rels.values() if rel.reltype.endswith("/theme"))
     from lxml import etree

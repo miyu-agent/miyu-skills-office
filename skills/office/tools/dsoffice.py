@@ -16,6 +16,13 @@ for path in (node, cli):
         print(f"dsoffice: missing {path}; reinstall the package for this system", file=sys.stderr)
         sys.exit(127)
 
+# The engine creates --output-dir and --output itself but not their parent directories.
+args = sys.argv[1:]
+for flag in ("--output-dir", "--output"):
+    if flag in args[:-1]:
+        parent = os.path.dirname(os.path.abspath(args[args.index(flag) + 1]))
+        os.makedirs(parent, exist_ok=True)
+
 if os.name == "nt":
     sys.exit(subprocess.call([node, cli, *sys.argv[1:]]))
 os.execv(node, [node, cli, *sys.argv[1:]])
