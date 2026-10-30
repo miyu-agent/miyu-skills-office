@@ -13,7 +13,7 @@ The engine is LibreOffice Kit, run through `tools/dsoffice.py` with the bundled 
 - Paths are absolute or relative to the working directory; each is quoted. Outputs are new paths: an existing output file is never overwritten, and `--output-dir` must not exist yet (the engine creates it).
 - Each command prints one JSON object. `render` lists every image (`path`, `width`, `height`, page) and `missingFonts`; `convert` gives `pageCount` and `missingFonts`.
 - `capabilities` lists formats, limits and options.
-- LibreOffice output can differ from Word, PowerPoint or Excel, mainly in fonts and pagination. `missingFonts` names fonts the document asks for that this machine lacks.
+- LibreOffice output can differ from Word, PowerPoint or Excel, mainly in fonts and pagination. `missingFonts` names fonts the document asks for that this machine lacks; the engine draws them with an equivalent (Arial → Liberation Sans, Microsoft YaHei → Noto Sans CJK or PingFang SC, Calibri → Carlito when installed). A missing font with no equivalent shows as a fallback face.
 
 ## Render
 

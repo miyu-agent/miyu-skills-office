@@ -13,17 +13,16 @@ openpyxl reads and edits workbooks, including styles and formulas. pandas analys
 ## Creating
 
 ```python
-from openpyxl import Workbook
-from openpyxl.styles import Font
+import sys
+sys.path.insert(0, "<this skill>/tools")
+import officestyle
 
-workbook = Workbook()
+workbook = officestyle.new_workbook()            # default font Arial instead of Calibri
 sheet = workbook.active
 sheet.title = "Revenue"
 for row in [("Quarter", "Revenue"), ("Q1", 12), ("Q2", 18), ("Total", "=SUM(B2:B3)")]:
     sheet.append(row)
-for cell in sheet[1]:
-    cell.font = Font(bold=True)
-sheet.column_dimensions["A"].width = 18
+officestyle.style_header(sheet, widths={"A": 18, "B": 14})   # bold shaded header, frozen below it
 workbook.save("report.xlsx")
 ```
 

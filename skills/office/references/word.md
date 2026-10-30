@@ -14,7 +14,7 @@ python-docx creates and edits .docx files. It does not paginate or render; pages
 
 Paragraph styles carry headings and body text. Tables are sized for the section that holds them; merged cells and nested tables change cell counts.
 
-Chinese, Japanese and Korean text: `run.font.name` sets only the Latin font. The East Asian font is a separate attribute:
+Chinese, Japanese and Korean text: `run.font.name` sets only the Latin font. The East Asian font is a separate attribute; `officestyle.set_fonts(run_or_style)` sets both, or by hand:
 
 ```python
 from docx.oxml.ns import qn
@@ -22,21 +22,27 @@ run.font.name = "Noto Sans CJK SC"
 run._element.rPr.rFonts.set(qn("w:eastAsia"), "Noto Sans CJK SC")
 ```
 
-A font name does not guarantee the font is installed; the engine reports missing fonts when rendering.
+Line spacing given as a multiple makes CJK lines taller than Latin ones (their fonts have taller line metrics); an "at least" spacing in points keeps lines even, which is what `officestyle` uses.
 
 ```python
-from docx import Document
+import sys
+sys.path.insert(0, "<this skill>/tools")
+import officestyle
+from docx.shared import Pt
 
-document = Document()
-document.add_heading("Project report", level=0)
-document.add_paragraph("Summary", style="Heading 1")
+document = officestyle.new_document()          # A4, Arial + 微软雅黑, plain headings
+document.add_paragraph("Project report", style="Title")
+document.add_heading("Summary", level=1)
 document.add_paragraph("The findings go here.")
-table = document.add_table(rows=1, cols=2)
-table.style = "Table Grid"
-table.rows[0].cells[0].text = "Item"
-table.rows[0].cells[1].text = "Value"
+table = document.add_table(rows=3, cols=2)
+for r, (item, value) in enumerate([("Item", "Value"), ("Revenue", "18"), ("Cost", "7")]):
+    table.cell(r, 0).text, table.cell(r, 1).text = item, value
+officestyle.style_table(table)                 # light rules, shaded header, padding
+document.add_paragraph("After the table.").paragraph_format.space_before = Pt(8)
 document.save("report.docx")
 ```
+
+A paragraph right after a table has no gap above it unless `space_before` is set.
 
 ## Checking
 

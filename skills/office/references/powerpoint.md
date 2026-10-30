@@ -19,17 +19,19 @@ presentation.save("report-edited.pptx")
 
 ## Creating
 
-Editable text boxes, tables and native charts keep the deck editable. Images come from local files. Slide size, font sizes and chart data are set explicitly: `Inches` or `Cm` for positions and sizes, `Pt` for font sizes. The default slide size is 4:3; 16:9 is 13.333 × 7.5 inches.
+Editable text boxes, tables and native charts keep the deck editable. Images come from local files. Slide size, font sizes and chart data are set explicitly: `Inches` or `Cm` for positions and sizes, `Pt` for font sizes.
+
+`Presentation()` alone is 4:3 with Calibri theme fonts; changing only `slide_width` to 16:9 leaves the layouts' placeholders crowded on the left. `officestyle.new_presentation()` returns a 16:9 deck with the layouts widened and the theme fonts set to Arial and Microsoft YaHei, so placeholders and new text boxes inherit them.
 
 ```python
-from pptx import Presentation
+import sys
+sys.path.insert(0, "<this skill>/tools")
+import officestyle
 from pptx.chart.data import CategoryChartData
 from pptx.enum.chart import XL_CHART_TYPE
 from pptx.util import Inches, Pt
 
-presentation = Presentation()
-presentation.slide_width = Inches(13.333)
-presentation.slide_height = Inches(7.5)
+presentation = officestyle.new_presentation()
 slide = presentation.slides.add_slide(presentation.slide_layouts[6])  # blank
 title = slide.shapes.add_textbox(Inches(0.6), Inches(0.4), Inches(12), Inches(0.8))
 run = title.text_frame.paragraphs[0].add_run()

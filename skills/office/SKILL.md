@@ -20,8 +20,19 @@ Paths below are relative to this folder (the folder holding this `SKILL.md`).
 |---|---|---|
 | Python 3.12 with python-docx, python-pptx, openpyxl, XlsxWriter, pandas, numpy, Pillow, lxml | `runtime/python/bin/python3` | `runtime\python\python.exe` |
 | LibreOffice engine (render, PDF, recalculate) | `<python> tools/dsoffice.py <command> …` | same |
+| Default look for new files | `tools/officestyle.py` (import after `sys.path.insert(0, "<this folder>/tools")`) | same |
 
 Run scripts with the bundled Python by its absolute path. The folder is read-only: scripts, intermediate files and outputs go in the workspace. Script names such as `docx.py`, `pptx.py`, `openpyxl.py` or `inspect.py` shadow the libraries.
+
+## New files
+
+A document made with the libraries' bare defaults uses serif fonts (Times-like Latin, Song-style CJK), blue template headings and cramped tables, and reads poorly on screen. `officestyle` gives new files a plain sans look: Arial with Microsoft YaHei (微软雅黑), readable sizes and spacing, light tables. Both fonts are standard on Windows; elsewhere the engine and Office substitute equivalents (Liberation Sans, PingFang SC, Noto Sans CJK).
+
+- Word: `officestyle.new_document()`, `officestyle.style_table(table)`, `officestyle.set_fonts(run)`
+- PowerPoint: `officestyle.new_presentation()` (16:9, theme fonts set), `officestyle.set_run_fonts(run)`
+- Excel: `officestyle.new_workbook()`, `officestyle.style_header(sheet, widths={"A": 18})`
+
+A user's own template or an existing file keeps its own design.
 
 ## References
 
