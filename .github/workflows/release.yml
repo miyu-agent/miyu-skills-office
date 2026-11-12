@@ -12,7 +12,7 @@ jobs:
     permissions:
       contents: write
     with:
-      package: miyu-skills-office
+      package: office
       target: ${{ matrix.target }}
       # 每种系统的运行环境都在 Linux 上拼（Python 库照目标系统取 wheel，npm 照目标系统挑引擎），拼完删掉拼的脚本
       build: RUNTIME_WORK="$RUNNER_TEMP/office-build" build/runtime.sh ${{ matrix.target }} && rm -rf build

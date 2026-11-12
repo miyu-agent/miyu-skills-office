@@ -1,5 +1,5 @@
 [package]
-version = "0.1.3"
+version = "0.1.4"
 name = { en = "Office documents", zh = "Office 文档" }
 summary = { en = "Let the AI write, read and edit Word, PowerPoint and Excel files, render them to images and export PDF; Python and the LibreOffice engine are bundled", zh = "让 AI 写、读、改 Word、PPT、Excel，渲染成图、导出 PDF；自带 Python 和 LibreOffice 引擎，装上就能用" }
 author = "SHORiN-KiWATA"
