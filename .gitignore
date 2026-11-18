@@ -1,3 +1,4 @@
 .build/
 skills/office/runtime/
 .worktrees/
+__pycache__/
