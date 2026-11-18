@@ -17,11 +17,18 @@ for path in (node, cli):
         sys.exit(127)
 
 # The engine creates --output-dir and --output itself but not their parent directories.
+# Both `--output PATH` and `--output=PATH` are accepted by the engine.
 args = sys.argv[1:]
-for flag in ("--output-dir", "--output"):
-    if flag in args[:-1]:
-        parent = os.path.dirname(os.path.abspath(args[args.index(flag) + 1]))
-        os.makedirs(parent, exist_ok=True)
+for index, arg in enumerate(args):
+    for flag in ("--output-dir", "--output"):
+        if arg == flag and index + 1 < len(args):
+            value = args[index + 1]
+        elif arg.startswith(flag + "="):
+            value = arg[len(flag) + 1:]
+        else:
+            continue
+        if value:
+            os.makedirs(os.path.dirname(os.path.abspath(value)), exist_ok=True)
 
 if os.name == "nt":
     sys.exit(subprocess.call([node, cli, *sys.argv[1:]]))

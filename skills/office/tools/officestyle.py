@@ -184,7 +184,8 @@ def set_run_fonts(run, latin=LATIN, east_asian=EAST_ASIAN):
     ea = rpr.find(pqn("a:ea"))
     if ea is None:
         ea = rpr.makeelement(pqn("a:ea"), {})
-        rpr.find(pqn("a:latin")).addnext(ea)
+        # Schema order puts a:ea right after a:latin; with latin=None there is no a:latin.
+        rpr.insert_element_before(ea, "a:cs", "a:sym", "a:hlinkClick", "a:hlinkMouseOver", "a:rtl", "a:extLst")
     ea.set("typeface", east_asian)
 
 
