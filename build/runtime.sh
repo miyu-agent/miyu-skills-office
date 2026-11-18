@@ -32,8 +32,9 @@ mkdir -p "$work"
 rm -rf "$out"
 mkdir -p "$out"
 
-fetch() { # url file
-  [ -s "$2" ] || curl -fsSL --retry 3 -o "$2.part" "$1" && { [ ! -e "$2.part" ] || mv "$2.part" "$2"; }
+fetch() { # url file：缓存非空就直接用（不看也不动 .part）；否则下到 .part，成功了才改名
+  if [ -s "$2" ]; then return 0; fi
+  curl -fsSL --retry 3 -o "$2.part" "$1" && mv "$2.part" "$2"
 }
 
 # ---- Python ----------------------------------------------------------------
