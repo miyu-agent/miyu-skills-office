@@ -46,7 +46,7 @@ for triple in x86_64-unknown-linux-gnu "$py"; do
   fetch "$py_base/${name/+/%2B}" "$work/$name"
   (cd "$work" && grep " $name\$" python-SHA256SUMS | sha256sum -c --quiet -)
 done
-# 拼的这台机器上的 Python：用它的 pip 取目标系统的 wheel，用它编 .pyc（同一个小版本，.pyc 各系统通用）
+# 拼的这台机器上的 Python：用它的 pip 取目标系统的 wheel
 host="$work/host-python"
 if [ ! -x "$host/bin/python3" ]; then
   mkdir -p "$host" && tar -xzf "$work/$(py_name x86_64-unknown-linux-gnu)" -C "$host" --strip-components=1
@@ -56,8 +56,6 @@ if [ "$npm_os" = win32 ]; then site="$out/python/Lib/site-packages"; else site="
 "$host/bin/python3" -m pip install --quiet --disable-pip-version-check --no-compile --only-binary=:all: \
   --implementation cp --python-version 3.12 --abi cp312 --abi abi3 --abi none "${wheel[@]}" \
   --target "$site" "${PY_PACKAGES[@]}"
-# 包里的东西装上以后是只读的，.pyc 先编好；unchecked-hash：解包换了修改时间也照用
-"$host/bin/python3" -m compileall -q -j0 --invalidation-mode unchecked-hash "$out/python" >/dev/null || true
 # 用不上的：pip、ensurepip、测试、头文件、tcl/tk、idle；bin/ 只留解释器本身（别的是链接、pip 这些的入口）
 rm -rf "$site"/pip "$site"/pip-* "$out/python/include" "$out/python/share"
 find "$out/python" -depth -type d \( -name tests -o -name test -o -name idlelib -o -name tkinter -o -name turtledemo \
